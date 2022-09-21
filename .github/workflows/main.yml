@@ -1,0 +1,31 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        os:
+          - ubuntu-18.04
+    steps:
+      - name: Install dependencies (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |-
+          sudo apt-get update
+          sudo apt-get install -y 
+      - name: Cache multiple paths
+        uses: actions/cache@v2
+        with:
+          path: |-
+            $HOME/.m2
+            $HOME/.ccache
+          key: '${{ runner.os }}-${{ hashFiles(''TODO'') }}'
+      - uses: actions/checkout@v2
+      - run: cd $TRAVIS_BUILD_DIR
+      - run: cd releng/org.yakindu.sct.releng && mvn clean verify -Dtycho.disableP2Mirrors=true
